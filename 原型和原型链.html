@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<script>
+			原型
+
+废话不多说，直接从重点开始，在JavaScript的世界里，万物皆对象这个概念从一而终。基本的数据类型是对象，比如
+
+var x=1;
+var y=’str’;
+var z=null;
+这些都是基本的数据类型但是不存在原型对象，这些对象都是window对象下，number类型，字符串类型等的实例。
+引用类型也是对象，比如
+
+var x=new Array();
+var y=new object();
+var z=new Function();
+但是原型对象只存在于函数对象。也就是本质上只要是通过new Function创建的函数对象会有一个原型对象。
+而对于其他非Function的引用类型归根结底也是通过new Function创建的。
+如上面提到的Array类型、Object类型。
+实际上，在每个函数对象创建的时候，都会自带一个prototype的属性，这个属性相当于一个指针，指向他本身的原型对象，这个原型对象里包含着自定义的方法属性，
+现假设创建了函数对象a
+
+  function a(){
+      this.name='xiaoming';
+      this.sayName=function () {
+          console.log(this.name);
+      }
+  }
+则会有如下所示的结构
+
+
+在默认情况下，a.prototype下会带有一个constructor属性，这个属性指向创建当前函数对象的构造函数，比如这里
+constructor指向构造函数a本身也就是说
+
+a.prototypr.constructor==a   //true
+另外默认还有一个_proto_属性，这个属性指向由创建这个函数对象的引用类型中继承而来的属性和方法。
+当通过构造函数实例化一个对象b时，即new a();
+则会产生如图所示结构
+
+首先这个new出来的对象属于普通对象，所以没有prototype属性。但他有_proto_这个属性，这个属性指向创建它的引用类型的原型对象，在这个例子中指向a.prototype,从而继承来自引用类型a的属性和方法。
+而原型的很大一部分作用是用来继承的，在上面的例子中，b就继承了a中的属性name,和方法sayName
+总结一下要点就是：
+1、原型对象只存在于函数对象中；
+2、prototype为函数对象的一个属性，这个属性指向原型对象;(a.prototype);
+
+原型链
+
+上面原型说的继承是指当前引用类型的实例继承来自引用类型的属性方法。而通过原型链我们可以进行两个类型之间的继承。假设当前有两个aa、AA：
+
+  function aa(){
+      a.prototype.name='xiaoming';
+      a.prototype.sayName=function () {
+          console.log(this.name);
+      }
+  }
+  function AA() {
+      A.prototype.age=15;
+      A.prototype.sayAge=function(){
+          console.log(this.age);
+      }
+  }
+//AA继承aa
+AA.prototype=new aa();
+var BB=new AA();
+console.log(BB);
+console.log(BB.sayName())     //"xiaoming"
+打印出的结果为
+
+大致流程就是通过AA.prototype=new aa();使得AA.prototype(原型对象)下的_proto_指向aa.prototype，当创建引用类型AA的实例化对象BB时，BB内部会产生一个_proto_属性指向AA的原型对象，再通过AA原型对象中的_proto_指向aa的原型对象，从而实现实例对象BB对aa的继承，整个链向：BB的_proto_ —->AA.prototype—->aa.prototype，这就是一条原型链，如果在继续延伸的话，aa的原型对象下的_proto_属性会指向Function本身。
+		</script>
+	</body>
+</html>
