@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<script type="text/javascript">
+			ES6新特性5：类(Class)和继承(Extends)
+本文摘自ECMAScript6入门，转载请注明出处。
+
+ 
+
+一、类（Class）
+
+　　1.基本语法
+
+　　JavaScript语言的传统方法是通过构造函数，定义并生成新对象。下面是一个例子
+
+复制代码
+function Point(x, y) {
+    this.x = x;
+    this.y = y;
+}
+
+Point.prototype.toString = function () {
+    return '(' + this.x + ', ' + this.y + ')';
+};
+
+var p = new Point(1, 2);
+复制代码
+ 
+
+　　ES6提供了更接近传统语言的写法，引入了Class（类）这个概念，作为对象的模板。通过class关键字，可以定义类。基本上，ES6的class可以看作只是一个语法糖，它的绝大部分功能，ES5都可以做到，新的class写法只是让对象原型的写法更加清晰、更像面向对象编程的语法而已。上面的代码用ES6的“类”改写，就是下面这样。
+
+复制代码
+//定义类
+class Point {
+    constructor(x, y) {    //constructor 构造方法
+        this.x = x;
+        this.y = y;
+    }
+
+    toString() {
+        return '(' + this.x + ', ' + this.y + ')';
+    }
+}
+
+var p = new Point(1, 2);
+复制代码
+　　构造函数的prototype属性，在ES6的“类”上面继续存在。事实上，类的所有方法都还是定义在类的prototype属性上面。
+
+ 
+
+　　2.constructor方法
+
+　　constructor方法是类的默认方法，通过new命令生成对象实例时，自动调用该方法。一个类必须有constructor方法，如果没有显式定义，一个空的constructor方法会被默认添加。
+
+ 
+
+二、继承（Extends）
+
+　　Class之间可以通过extends关键字实现继承，这比ES5的通过修改原型链实现继承，要清晰和方便很多。
+
+复制代码
+class ColorPoint extends Point {
+    constructor(x, y, color) {
+        super(x, y); // 调用父类的constructor(x, y)
+        this.color = color;
+    }
+
+    toString() {
+        return this.color + ' ' + super.toString(); // 调用父类的toString()
+    }
+}
+复制代码
+　　上面代码中，constructor方法和toString方法之中，都出现了super关键字，它在这里表示父类的构造函数，用来新建父类的this对象。
+
+　　子类必须在constructor方法中调用super方法，否则新建实例时会报错。这是因为子类没有自己的this对象，而是继承父类的this对象，然后对其进行加工。如果不调用super方法，子类就得不到this对象。
+
+ 
+
+三、原生构造函数继承
+
+　　原生构造函数是指语言内置的构造函数，通常用来生成数据结构。ECMAScript的原生构造函数大致有下面这些。以前，这些原生构造函数是无法继承的。
+
+Boolean()
+Number()
+String()
+Array()
+Date()
+Function()
+RegExp()
+Error()
+Object()
+　　ES6允许继承原生构造函数定义子类，因为ES6是先新建父类的实例对象this，然后再用子类的构造函数修饰this，使得父类的所有行为都可以继承。下面是一个继承Array的例子。
+
+复制代码
+class MyArray extends Array {
+    constructor(...args) {
+        super(...args);
+    }
+}
+
+var arr = new MyArray();
+arr[0] = 12;
+arr.length // 1
+
+arr.length = 0;
+arr[0] // undefined
+复制代码
+　　上面代码定义了一个MyArray类，继承了Array构造函数，因此就可以从MyArray生成数组的实例。这意味着，ES6可以自定义原生数据结构（比如Array、String等）的子类，这是ES5无法做到的。
+
+ 
+
+四、Class的Generator方法
+
+　　如果某个方法之前加上星号（*），就表示该方法是一个Generator函数。
+
+复制代码
+class Foo {
+    constructor(...args) {
+        this.args = args;
+    }
+    * [Symbol.iterator]() {
+        for (let arg of this.args) {
+            yield arg;
+        }
+    }
+}
+
+for (let x of new Foo('hello', 'world')) {
+    console.log(x);
+}
+// hello
+// world
+复制代码
+ 
+
+上面代码中，Foo类的Symbol.iterator方法前有一个星号，表示该方法是一个Generator函数。Symbol.iterator方法返回一个Foo类的默认遍历器，for...of循环会自动调用这个遍历器。
+
+ 
+
+五、Class的静态方法
+
+　　类相当于实例的原型，所有在类中定义的方法，都会被实例继承。如果在一个方法前，加上static关键字，就表示该方法不会被实例继承，而是直接通过类来调用，这就称为“静态方法”。
+
+复制代码
+class Foo {
+    static classMethod() {
+        return 'hello';
+    }
+}
+
+Foo.classMethod() // 'hello'
+
+var foo = new Foo();
+foo.classMethod()
+// TypeError: foo.classMethod is not a function
+复制代码
+　　上面代码中，Foo类的classMethod方法前有static关键字，表明该方法是一个静态方法，可以直接在Foo类上调用（Foo.classMethod()），而不是在Foo类的实例上调用。如果在实例上调用静态方法，会抛出一个错误，表示不存在该方法。
+
+　　父类的静态方法，可以被子类继承。
+
+复制代码
+class Foo {
+    static classMethod() {
+        return 'hello';
+    }
+}
+
+class Bar extends Foo {
+}
+
+Bar.classMethod(); // 'hello'
+复制代码
+　　上面代码中，父类Foo有一个静态方法，子类Bar可以调用这个方法。
+		</script>
+	</body>
+</html>
