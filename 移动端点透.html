@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<script type="text/javascript">
+			移动端的click点透问题 - 梦1106
+在移动端开发中，有时会出现click点透的问题。
+
+一、什么是click点透
+
+以下情况，在B元素上有半透明红色遮盖层A，黄色B元素内有可点击链接C。
+
+tips：以下举例仅针对webkit内核浏览器，所有效果需要在移动端进行查看（PC端不支持touch事件）。
+
+
+
+具体html代码如下：
+
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>移动端点透问题</title>
+	<style>
+		*{
+			margin: 0px;
+			padding:0px;
+		}
+		#div1{ /*红色半透明遮盖层A*/
+			width: 300px;
+			height: 300px;
+			background-color: rgba(255,0,0,0.25);		
+		}
+		#div2{ /*黄色内容层B*/
+			width: 240px;
+			height: 240px;
+			background-color: yellow;
+			position: absolute;
+			left: 30px;
+			top: 30px;
+			z-index: -1;
+		}
+		#console{ /*绿色状态输出框*/
+			border: 1px solid green;
+			position: absolute;
+			top: 300px;
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div id="div1"></div>
+	<div id="div2">
+	   <a href="www.baidu.com">www.baidu.com</a>
+	</div>
+	<div id="console"></div>
+</body>
+</html>
+在“移动端”，点击事件通常采用touch相关事件来获取高效率。现有需求， 点击遮盖层A则隐藏A（点击后隐藏，这一点很重要） ，则相关javascript代码如下：
+
+var div1 = document.getElementById("div1");
+		var div2 = document.getElementById('div2');
+		var con = document.getElementById('console');
+		function handle(e){var tar = e.target,
+　　　　　　　　　 eve = e.type;
+			var ele = document.createElement("p");
+			ele.innerHTML = "target:"+ tar.id + " event:" + eve ;
+			con.appendChild(ele);
+			if(tar.id === "div1"){ 
+				div1.style.display = "none";
+			}
+		}
+		div1.addEventListener("touchend",handle);
+		div1.addEventListener("touchstart",handle);
+这段简单的代码在 C区域外点击时是没有任何问题的，页面下方的log记录控制台内会出现如下内容：
+
+target:div1 event:touchstart
+target:div2 event:touchend
+然而，当在C区域进行点击罩层A的时候，会发现跳到百度页面了，也就是，本来点击A，但是却透过A，点击到了B里的链接！这就是传说中的 click点透 。
+
+为了更清楚的看到这个过程，我们为B绑定click事件，即如果B触发了click事件，那么说明，在A上的点击最终点到了B上。在上面javascript清单上添加一行代码如下：
+
+div2.addEventListener('click',handle);
+点击B区域，可以看到页面下方的log记录控制台内出现如下内容：
+
+target:div1 event:touchstart
+target:div1 event:touchend
+target:div2 event:click
+可见，在div1的事件触发完毕后，div2也就是B区域神奇的捕获到了click事件，而事实上我们只点击了div1。
+
+二、点透出现的场景
+
+刚才举例说明了什么是点透，其实点透的出现场景可以总结如下：
+
+1.A/B两个层上下z轴重叠。
+
+2.上层的A点击后消失或移开。（这一点很重要）
+
+3.B元素本身有默认click事件（如a标签） 或 B绑定了click事件。
+
+在以上情况下，点击A/B重叠的部分，就会出现点透的现象。
+
+二、为什么会出现点透
+
+ click延迟，延迟，还是延迟。
+
+在移动端不使用click而用touch事件代替触摸是因为click事件有着明显的延迟，具体touchstart与click的区别如下：
+
+1.touchstart：在这个DOM（或冒泡到这个DOM）上手指触摸开始即能立即触发
+2.click：在这个DOM（或冒泡到这个DOM）上手指触摸开始，且手指未曾在屏幕上移动（某些浏览器允许移动一个非常小的位移值），且在这个在这个dom上手指离开屏幕，且触摸和离开屏幕之间的间隔时间较短（某些浏览器不检测间隔时间，也会触发click）才能触发
+也就是说，事件的触发时间按由早到晚排列为：touchstart 早于 touchend 早于 click。亦即click的触发是有延迟的，这个时间大概在300ms左右。
+
+由于我们在touchstart阶段就已经隐藏了罩层A，当click被触发时候，能够被点击的元素则是其下的B元素，根据click事件的触发规则：
+
+只有在被触发时，当前有click事件的元素显示，且在面朝用户的最前端时，才触发click事件。
+由于B绑定了click事件（或者B本身默认存在click事件），所以B的click事件被触发，产生了点透的情况。
+
+三、解决方案
+
+1.对于B元素本身没有默认click事件的情况（无a标签等），应统一使用touch事件，统一代码风格，并且由于click事件在移动端的延迟要大很多，不利于用户体验，所以关于触摸事件应尽量使用touch相关事件。
+
+2.对于B元素本身存在默认click事件的情况,应及时取消A元素的默认点击事件，从而阻止click事件的产生。即应在上例的 handle函数中添加 代码如下：
+
+if(eve == "touchsend") e.preventDefault();
+ 3.对于遮盖浮层，由于遮盖浮层的点击即使有小延迟也是没有关系的，反而会有疑似更好的用户体验，所以这种情况，可以针对遮盖浮层自己采用click事件，这样就不会出现点透问题。
+
+四、现有解决方案框架（库）
+
+1. 众所周知，zepto的tap事件是有点透问题的，但是最新版的zepto已经修复了这个问题。
+
+2. 在zepto修复问题之前，有fastclick、hammer等通用库可以使用。
+		</script>
+	</body>
+</html>
