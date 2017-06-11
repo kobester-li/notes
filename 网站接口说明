@@ -1,0 +1,30 @@
+一个登录接口的简单例子：某个网站的登录接口需要向网站服务器端程序提交正确的用户名和密码就可以成功登录。那这样这个登录接口就是这个网站的一个接口了。这个接口的定义主要有服务器端接收程序和要提交的数据和提交方法三部分组成，其中要发送的数据有用户名和密码。
+例：
+服务器端接收程序：http://localhost/Inter/login.php
+提交方法：post
+发送的数据：username（表示用户名）password（表示密码）
+
+注册接口、登录接口、个人信息设置接口、个人信息设置接口、修改密码接口、个人信息设置接口、发贴接口、评论接口、删除评论接口、拉取主贴接口、拉取好友动态接口……
+
+补充一下，接口的定义还需要返回数据的定义，上面的登录接口的定义示例修改：
+服务器端接收程序：http://localhost/Inter/login.php
+提交方法：post
+发送的数据：username（表示用户名）password（表示密码）
+返回数据：
+state	成败状态（1成功 0失败
+error_code	失败码
+error_messags	失败原因
+
+例子：
+接口均返回json格式字符串
+
+
+{"resultCode":1000,"message":null,"error":null,"data":null,"dataReserve1":null,"dataReserve2":null }
+
+字段名	字段说明
+resultCode	1000表示成功，1001表示失败
+message	消息内容
+error	错误消息
+data	数据结果集
+dataReserve1	预留字段，一般不用
+dataReserve2	预留字段，一般不用
