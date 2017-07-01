@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script type="text/javascript">
+    React-约束组件及无约束组件详解
+    标签： Ract约束性组件无约束组件组件使用
+    2016-03-21 10:03 1274人阅读 评论(0) 收藏 举报
+    分类： >>React（39）
+    版权声明：本文为博主原创文章，未经博主允许不得转载。
+    React可以帮助管理应用中的状态，自然也包括表单在内，现在知道react组件的核心理念就是可预知性和可测试性，在React中，表单组件有两种类型：约束组件和无约束组件。
+
+    一、无约束组件
+    在HTML中表单组件与React组件的行为方式并不一致，给定HTML的<input/>一个值，这个<input />的值仍是可以改变的。这正是无约束组件名称的由来，因为表单组件的值是不受约束的。
+    在React中这种行为与设置<input />的default一致。我们可以通过defaultValue属性设置<input/>的默认值。
+    var MyForm = React.createClass({
+        render：functin(){
+        return <input type ="text" defaultValue ="helloWorld!"/>;
+    }
+
+    });
+    上面这个例子展示的无约束组件。组件的value并非由父组件设置，而是让<input />自己控制自己的值。
+    一个无约束组件没有太大的用处，除非可以访问它的值。因此需要给<input/>添加一个ref属性，以访问DOM节点的值。
+    ref是一个不属于ＤＯＭ属性的特殊特殊属性，用来标记DOM节点，可以通过this上下文访问这个节点，为了便于访问，组件中所有的ref都添加到了this.refs上。
+
+
+    没有设置value（或者设为null）的<input>组件是一个不受限组件。对于不受限的<input>组件，渲染出来的元素直接反应用户输入。例如：
+    render：function（）{
+        return<Input type="text"/>
+    }
+    以上代码将是一个没有任何内容过的空的输入框，用户输入将理解反映到元素上。和受限元素一样，使用onChange事件可以监听值的变化。
+    如果想给组件设置一个非空的初始值，可以使用defaultValue属性。例如：
+    render：function（）{
+        return <input type="text" defaultValue="Hello" />;
+    }
+    以上代码渲染出来的元素和受限组件一样有一个初始化的值，但是这个值可以改变并反应到页面上。
+    同样的类型为radio、checkbox、的<ingput>支持defaultChecked属性，<select>支持defaultValue属性。
+    render: function() {
+        return (
+            <div>
+            <input type="radio"name="opt" defaultChecked /> Option 1
+        <input type="radio"name="opt" /> Option 2
+        <select defaultValue="C">
+        <optionvalue="A">Apple</option>
+        <optionvalue="B">Banana</option>
+        <optionvalue="C">Cranberry</option>
+            </select>
+            </div>
+    );
+    }
+
+
+    二、约束组件
+    如果想要更好的控制表单组件，推荐使用约束组件。在约束组件中，输入框的值是由父组件设置的。
+    var MyForm =React.createClass({
+        getInitialState:function(){
+            return{
+                helloTo:"hello World"
+            };
+        },
+    });
+    handleChange:funciton(){
+        this.setState({
+            helloTo:event.targer.value
+        });
+    },
+    submitHandler:function(){
+        event.preventDefault();
+        alert(this.state.helloTo);
+    },
+    render:funciton(){
+        return(
+            <form onSubmit ={this.submitHandler}>
+    <input type='text' value ={this.state.helloTo} onchange={this.handleChange} />
+    <br/>
+        <button type="submit">Speak</button>
+            </form>
+
+    );
+    }
+    });
+
+    这个显著的变化是<input/>的值存储在父组件中的state中，因此数据流有了清晰的定义：
+    getInitialState设置defaultValue
+    <input/>的值在渲染时被设置。
+    <input/>的值onChange时，change处理器被调用。
+    change处理器更新state
+    在重新渲染时更新<input/>的值
+    虽然与无约束组件相比，代码量增加了不少但是现在可以控制数据流，在用户输入时更新state。
+    示例：
+    handleChange：function(event){
+        this.setState({
+            helloTo:event.target.value.toUpperCase()
+        });
+
+</script>
+</body>
+</html>
