@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<script type="text/javascript">
+			我们继续说JS，我们常常在页面加载完成以后做一些操作，比如一些元素的显示与隐藏、一些动画效果。我们通常有两种方法来完成这个事情，一个就是window.onload事件，另一个就是JQuery的ready()方法。那么这 两种方法有什么区别呢？往下看：
+
+onload事件，是在页面中所有元素以及内容全部加载完成以后触发的；而ready()方法，则是在页面的DOM结构加载完毕以后就被触发了。也就是说ready()方法会在onload事件之前执行。
+
+
+举一个例子： 
+
+假设有一个表现图库的页面，这种页面中可能会包含许多大型图像，我们可以通过jQuery隐藏、显示或以其他方式操作这些图像。如果我们通过onload页面设置界面，那么用户在能够使用这个页面之前，必须要等到每一幅图像都下载完成。更糟糕的是，如果行为稍微添加给哪些具有默认行为的元素(比如链接)，那么用户的交互可能会导致意想不到的结果。然而当我们试用$(document).ready(){ }进行设置时，这个界面就会更早地准备好可用的正确行为。 
+
+使用$(document).ready(){ }一般来说都要优于试用onload事件处理程序，但必须要明确一点的是，因为支持文件可能还没有家在完成，所以类似图像的高度和宽度这样的属性此时不一定有效。
+
+
+onload事件通常写成如下形式：
+
+复制代码
+function myfunction() {
+    
+    //your code
+    
+};
+
+window.onload = myfunction;
+复制代码
+
+或者：
+
+window.onload = function(){
+    
+　　//your code
+
+};
+
+
+ready()方法通常如下：
+
+$(document).ready(function(){
+
+    //your code
+    
+});
+
+
+或者：
+
+$().ready(function(){
+    
+    //your code
+    
+});
+
+
+再或者：
+
+$(function(){
+    
+    //your code
+    
+});
+ 
+
+接下来再看两个例子：
+
+复制代码
+function first(){
+    
+    alert("first");
+    
+}
+
+function second(){
+    
+    alert("second");
+    
+}
+
+window.onload = second;
+window.onload = first; 
+复制代码
+ 
+
+这段代码会弹出“first”。
+
+ 
+
+复制代码
+function first(){
+    
+    alert("first");
+    
+}
+
+function second(){
+    
+    alert("second");
+    
+}
+
+$(document).ready(function(){
+    
+    first();
+    
+});
+
+$(document).ready(function(){
+    
+    second();
+    
+});
+复制代码
+ 
+
+
+上面这段代码会分别弹出“first”和“second”。
+
+
+为什么会这样呢？因为onload是一个事件，它只能绑定一个值，后面的会覆盖前面的；而ready()是一个方法，方法之间不会互相影响，所以会顺序执行。
+
+		</script>	
+	</body>
+</html>
